@@ -51,7 +51,15 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, json.dumps({"presets": PRESETS}))
         elif path in ("/", "/index.html"):
             with open(os.path.join(PUBLIC, "index.html"), "rb") as fh:
-                self._send(200, fh.read(), "text/html; charset=utf-8")
+                html = fh.read().decode("utf-8")
+            if MODE == "live":
+                # Honest badge: the static file says MOCK; in live mode the
+                # served page must say so, and vice versa. No live claim
+                # is ever served while the mock client is running.
+                html = html.replace(
+                    "MOCK MODE — live Qloo key pending",
+                    "LIVE — powered by Qloo Taste AI")
+            self._send(200, html, "text/html; charset=utf-8")
         else:
             self._send(404, json.dumps({"error": "not found"}))
 
